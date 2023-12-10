@@ -1,10 +1,14 @@
-// SPDX-License-Identifier: MPL-2.0
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 
 class SolidSimpleClimateOverviewCard extends HTMLElement {
   set hass(hass) {
     if (!this.content) {
       this.innerHTML = `
-        <ha-card>
+        <ha-card style="height: 100%">
           <div class="card-content"></div>
         </ha-card>
       `;
@@ -14,35 +18,42 @@ class SolidSimpleClimateOverviewCard extends HTMLElement {
     const entityId = this.config.entity;
     const state = hass.states[entityId];
 
+    const hvacTargetElement = `
+      <div style="text-align: center; position: relative; color: #333;">
+        ${state.attributes.hvac_action ? hass.formatEntityAttributeValue(state, 'hvac_action') : hass.formatEntityState(state)}
+        ${state.attributes.temperature ? `
+          <div style="display: inline-block; position:relative;">
+            <span style="position: relative; display: inline-block; top: -1px"><ha-icon icon="mdi:arrow-right-bold" style="--mdc-icon-size: 12px"></ha-icon></span>
+            ${state.attributes.temperature}
+            <span style="font-size: 0.8rem; ">˚C</span>
+          </div>
+        ` : ''}
+      </div>
+    `;
+
     this.content.innerHTML = `
       <a href="${this.config.link}" style="text-decoration: none">
-        <h2 style="text-align:center; margin: 0; color: #555555; font-size: 1.2em">${this.config.name}</h2>
+        <h3 style="text-align:center; margin: 0; color: #555555; font-size: 1rem; font-weight: bolder">${this.config.name}</h3>
       
-        <div style="text-align: center; font-size: 2.25rem; font-weight: bold; color: #333; margin: 1.5rem 0 1.125rem">
+        <div style="text-align: center; font-size: 2rem; font-weight: bold; color: #333; margin: 1.375rem 0 1rem">
           <div style="display: inline-block; position:relative">
             ${state.attributes.current_temperature}
-            <span style="font-size: 1.8rem;">˚C</span>
+            <span style="font-size: 1.7rem;">˚C</span>
           </div>
         </div>
-      
-        <div style="text-align: center; font-size: 1.125rem; position: relative; color: #333;">
-          <div style="display: inline-block; position:relative">
-            <div style="position:absolute; left: -50px; text-align: right; width: 40px; padding-right: 12px; margin-top: -1px"><ha-icon icon="mdi:arrow-right-bold" style="--mdc-icon-size: 12px"></ha-icon></div>
-            ${state.attributes.temperature}
-            <span style="font-size: 1rem; ">˚C</span>
-          </div>
-        </div>
+        
+        ${hvacTargetElement}
       </a>
     `;
   }
 
   setConfig(config) {
     if (!config.entity) {
-        throw new Error("You need to define a name");
+      throw new Error("You need to define a name");
     }
 
     if (!config.entity) {
-        throw new Error("You need to define an entity");
+      throw new Error("You need to define an entity");
     }
 
     this.config = config;
