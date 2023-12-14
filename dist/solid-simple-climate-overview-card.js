@@ -18,6 +18,11 @@ class SolidSimpleClimateOverviewCard extends HTMLElement {
     const entityId = this.config.entity;
     const state = hass.states[entityId];
 
+    if(!state) {
+      this.content.innerHTML = `ERROR: entity ${entityId} not found`;
+      return;
+    }
+
     const hvacTargetElement = `
       <div style="text-align: center; position: relative; color: #333;">
         ${state.attributes.hvac_action ? hass.formatEntityAttributeValue(state, 'hvac_action') : hass.formatEntityState(state)}
