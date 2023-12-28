@@ -4,29 +4,37 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-class SolidSimpleClimateOverviewCard extends HTMLElement {
-  set hass(hass) {
-    if (!this.content) {
-      this.innerHTML = `
-        <ha-card style="height: 100%">
-          <div class="card-content"></div>
-        </ha-card>
-      `;
-      this.content = this.querySelector("div");
-    }
+import {
+  LitElement,
+  html,
+  css,
+} from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
+class SolidSimpleClimateOverviewCard extends LitElement {
+  static get properties() {
+    return {
+      hass: {},
+      config: {},
+    };
+  }
+
+  render() {
+    const hass = this.hass;
     const entityId = this.config.entity;
     const state = hass.states[entityId];
 
-    if(!state) {
-      this.content.innerHTML = `ERROR: entity ${entityId} not found`;
-      return;
+    if (!state) {
+      return html`
+        <ha-card>
+          <div>ERROR: entity ${entityId} not found</div>
+        </ha-card>
+      `;
     }
 
-    const hvacTargetElement = `
+    const hvacTargetElement = html`
       <div style="text-align: center; position: relative; color: #333;">
         ${state.attributes.hvac_action ? hass.formatEntityAttributeValue(state, 'hvac_action') : hass.formatEntityState(state)}
-        ${state.attributes.temperature ? `
+        ${state.attributes.temperature ? html`
           <div style="display: inline-block; position:relative;">
             <span style="position: relative; display: inline-block; top: -1px"><ha-icon icon="mdi:arrow-right-bold" style="--mdc-icon-size: 12px"></ha-icon></span>
             ${state.attributes.temperature}
@@ -36,19 +44,22 @@ class SolidSimpleClimateOverviewCard extends HTMLElement {
       </div>
     `;
 
-    this.content.innerHTML = `
-      <a href="${this.config.link}" style="text-decoration: none">
-        <h3 style="text-align:center; margin: 0; color: #555555; font-size: 1rem; font-weight: bolder">${this.config.name}</h3>
-      
-        <div style="text-align: center; font-size: 2rem; font-weight: bold; color: #333; margin: 1.375rem 0 1rem">
-          <div style="display: inline-block; position:relative">
-            ${state.attributes.current_temperature}
-            <span style="font-size: 1.7rem;">˚C</span>
+    return html`
+      <ha-card>
+        <a class="full-link" href="${this.config.link}">
+          <h3 style="text-align:center; margin: 0; color: #555555; font-size: 1rem; font-weight: bolder">
+            ${this.config.name}</h3>
+
+          <div style="text-align: center; font-size: 2rem; font-weight: bold; color: #333; margin: 1.375rem 0 1rem">
+            <div style="display: inline-block; position:relative">
+              ${state.attributes.current_temperature}
+              <span style="font-size: 1.7rem;">˚C</span>
+            </div>
           </div>
-        </div>
-        
-        ${hvacTargetElement}
-      </a>
+
+          ${hvacTargetElement}
+        </a>
+      </ha-card>
     `;
   }
 
@@ -66,6 +77,55 @@ class SolidSimpleClimateOverviewCard extends HTMLElement {
 
   getCardSize() {
     return 3;
+  }
+
+  static get styles() {
+    return css`
+      ha-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+        overflow: hidden;
+      }
+
+      .full-link:before {
+        position: absolute;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        top: -10px;
+
+        content: "";
+
+        opacity: 0;
+        background-color: var(--state-inactive-color);
+
+        transition: opacity 200ms linear 0s;
+      }
+
+      .full-link:active:before {
+        opacity: 0.05;
+      }
+
+      .full-link:active:before {
+        opacity: 0.12;
+      }
+
+      .full-link {
+        text-decoration: none;
+        cursor: pointer;
+
+        flex-grow: 1;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        padding: 16px;
+        margin: 0;
+      }
+    `;
   }
 }
 
